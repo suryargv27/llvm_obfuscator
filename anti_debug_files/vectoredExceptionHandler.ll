@@ -11,7 +11,6 @@ target triple = "x86_64-pc-windows-gnu"
 %struct._M128A = type { i64, i64 }
 
 @debuggerDetected = dso_local global i32 1, align 4
-@.str = private unnamed_addr constant [20 x i8] c"trapFlags detected\0A\00", align 1
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local i32 @VectoredHandler(ptr noundef %0) #0 {
@@ -60,7 +59,7 @@ define dso_local i32 @trapFlags() #0 {
 
 7:                                                ; preds = %0
   store i32 -1, ptr %2, align 4
-  br label %19
+  br label %18
 
 8:                                                ; preds = %0
   %9 = call i64 @llvm.x86.flags.read.u64()
@@ -73,42 +72,19 @@ define dso_local i32 @trapFlags() #0 {
   %13 = call i32 @RemoveVectoredExceptionHandler(ptr noundef %12)
   %14 = load volatile i32, ptr @debuggerDetected, align 4
   %15 = icmp ne i32 %14, 0
-  br i1 %15, label %16, label %18
+  %16 = zext i1 %15 to i64
+  %17 = select i1 %15, i32 1, i32 0
+  store i32 %17, ptr %2, align 4
+  br label %18
 
-16:                                               ; preds = %8
-  %17 = call i32 (ptr, ...) @printf(ptr noundef @.str)
-  store i32 1, ptr %2, align 4
-  br label %19
-
-18:                                               ; preds = %8
-  store i32 0, ptr %2, align 4
-  br label %19
-
-19:                                               ; preds = %18, %16, %7
-  %20 = load i32, ptr %2, align 4
-  ret i32 %20
+18:                                               ; preds = %8, %7
+  %19 = load i32, ptr %2, align 4
+  ret i32 %19
 }
 
 declare dllimport ptr @AddVectoredExceptionHandler(i32 noundef, ptr noundef) #1
 
 declare dllimport i32 @RemoveVectoredExceptionHandler(ptr noundef) #1
-
-; Function Attrs: noinline nounwind optnone uwtable
-define internal i32 @printf(ptr noundef nonnull %0, ...) #0 {
-  %2 = alloca ptr, align 8
-  %3 = alloca i32, align 4
-  %4 = alloca ptr, align 8
-  store ptr %0, ptr %2, align 8
-  call void @llvm.va_start(ptr %4)
-  %5 = call ptr @__acrt_iob_func(i32 noundef 1)
-  %6 = load ptr, ptr %2, align 8
-  %7 = load ptr, ptr %4, align 8
-  %8 = call i32 @__mingw_vfprintf(ptr noundef %5, ptr noundef %6, ptr noundef %7) #2
-  store i32 %8, ptr %3, align 4
-  call void @llvm.va_end(ptr %4)
-  %9 = load i32, ptr %3, align 4
-  ret i32 %9
-}
 
 ; Function Attrs: nounwind
 declare void @llvm.x86.flags.write.u64(i64) #2
@@ -116,22 +92,9 @@ declare void @llvm.x86.flags.write.u64(i64) #2
 ; Function Attrs: nounwind
 declare i64 @llvm.x86.flags.read.u64() #2
 
-; Function Attrs: nocallback nofree nosync nounwind willreturn
-declare void @llvm.va_start(ptr) #3
-
-; Function Attrs: nounwind
-declare dso_local i32 @__mingw_vfprintf(ptr noundef, ptr noundef, ptr noundef) #4
-
-declare dllimport ptr @__acrt_iob_func(i32 noundef) #1
-
-; Function Attrs: nocallback nofree nosync nounwind willreturn
-declare void @llvm.va_end(ptr) #3
-
 attributes #0 = { noinline nounwind optnone uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #2 = { nounwind }
-attributes #3 = { nocallback nofree nosync nounwind willreturn }
-attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 
 !llvm.module.flags = !{!0, !1, !2, !3}
 !llvm.ident = !{!4}
@@ -141,4 +104,4 @@ attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-siz
 !2 = !{i32 7, !"uwtable", i32 2}
 !3 = !{i32 1, !"MaxTLSAlign", i32 65536}
 !4 = !{!"Ubuntu clang version 18.1.3 (1ubuntu1)"}
-!5 = !{i64 1103}
+!5 = !{i64 1203}

@@ -32,21 +32,15 @@ namespace
             FunctionType *boolFuncTy = FunctionType::get(
                 Type::getInt32Ty(M.getContext()), {}, false);
 
-            FunctionCallee hardwareBreakpoints = M.getOrInsertFunction("hardwareBreakpoints", boolFuncTy);
-            FunctionCallee softwareBreakpoints = M.getOrInsertFunction("softwareBreakpoints", boolFuncTy);
-            FunctionCallee checkDebuggerWindows = M.getOrInsertFunction("checkDebuggerWindows", boolFuncTy);
-            FunctionCallee antiVirtualizationCheck = M.getOrInsertFunction("antiVirtualizationCheck", boolFuncTy);
             FunctionCallee debuggerCheckAPI = M.getOrInsertFunction("debuggerCheckAPI", boolFuncTy);
-            FunctionCallee PEBFlagsCheck = M.getOrInsertFunction("PEBFlagsCheck", boolFuncTy);
-            FunctionCallee heapFlagsCheck = M.getOrInsertFunction("heapFlagsCheck", boolFuncTy);
             FunctionCallee checkDebugPort = M.getOrInsertFunction("checkDebugPort", boolFuncTy);
             FunctionCallee checkDebugObjectHandle = M.getOrInsertFunction("checkDebugObjectHandle", boolFuncTy);
-            FunctionCallee TimeBasedAntiAnalysis = M.getOrInsertFunction("TimeBasedAntiAnalysis", boolFuncTy);
-            FunctionCallee WaitForUserInteraction = M.getOrInsertFunction("WaitForUserInteraction", boolFuncTy);
-            FunctionCallee trapFlags = M.getOrInsertFunction("trapFlags", boolFuncTy);
+            FunctionCallee PEBFlagsCheck = M.getOrInsertFunction("PEBFlagsCheck", boolFuncTy);
+            FunctionCallee hardwareBreakpoints = M.getOrInsertFunction("hardwareBreakpoints", boolFuncTy);
+            FunctionCallee antiVirtualizationCheck = M.getOrInsertFunction("antiVirtualizationCheck", boolFuncTy);
             FunctionCallee CheckBIOSforVM = M.getOrInsertFunction("CheckBIOSforVM", boolFuncTy);
             FunctionCallee HasVMMacAddress = M.getOrInsertFunction("HasVMMacAddress", boolFuncTy);
-            FunctionCallee MouseMovedRecently = M.getOrInsertFunction("MouseMovedRecently", boolFuncTy);
+            FunctionCallee trapFlags = M.getOrInsertFunction("trapFlags", boolFuncTy);
 
             FunctionType *printfType = FunctionType::get(
                 Type::getInt32Ty(M.getContext()),
@@ -63,22 +57,16 @@ namespace
 
             // Create the condition check
             // Alternative implementation using a loop
-            SmallVector<Value *, 15> checks = {
-                builder.CreateCall(hardwareBreakpoints),
-                builder.CreateCall(softwareBreakpoints),
-                builder.CreateCall(checkDebuggerWindows),
-                builder.CreateCall(antiVirtualizationCheck),
+            SmallVector<Value *, 9> checks = {
                 builder.CreateCall(debuggerCheckAPI),
-                builder.CreateCall(PEBFlagsCheck),
-                builder.CreateCall(heapFlagsCheck),
                 builder.CreateCall(checkDebugPort),
                 builder.CreateCall(checkDebugObjectHandle),
-                builder.CreateCall(TimeBasedAntiAnalysis),
-                builder.CreateCall(WaitForUserInteraction),
-                builder.CreateCall(trapFlags),
+                builder.CreateCall(PEBFlagsCheck),
+                builder.CreateCall(hardwareBreakpoints),
+                builder.CreateCall(antiVirtualizationCheck),
                 builder.CreateCall(CheckBIOSforVM),
                 builder.CreateCall(HasVMMacAddress),
-                builder.CreateCall(MouseMovedRecently)};
+                builder.CreateCall(trapFlags)};
 
             Value *finalOr = checks[0];
             for (unsigned i = 1; i < checks.size(); ++i)

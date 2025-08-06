@@ -8,7 +8,9 @@ LONG WINAPI VectoredHandler(PEXCEPTION_POINTERS pExceptionInfo)
 {
     if (pExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_SINGLE_STEP)
     {
+
         debuggerDetected = FALSE; // Exception reached us, likely no debugger
+                                  // Advance the instruction pointer to skip the NOP (if needed)
 #ifdef _M_X64
         pExceptionInfo->ContextRecord->Rip += 1;
 #else
@@ -41,13 +43,7 @@ int trapFlags()
 #endif
 
     RemoveVectoredExceptionHandler(handler);
-
-    if (debuggerDetected) {
-        printf("trapFlags detected\n");
-        return 1;
-    }
-
-    return 0;
+    return debuggerDetected ? 1 : 0;
 }
 
 // int main()
